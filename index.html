@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hôm nay ăn gì? - Bản quyền Kim Yến</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body { font-family: 'Montserrat', sans-serif; }
+    .bg-gradient-ocean { background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%); }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col justify-between">
+
+  <!-- Sticky Header -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-sky-100 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-ocean flex items-center justify-center text-white text-xl font-black shadow-md shadow-sky-500/20">
+          🍜
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-slate-800 leading-tight">Hôm nay ăn gì?</h1>
+          <p class="text-xs text-sky-600 font-medium">Vercel Fullstack Edition</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="syncWithBackend()" class="px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold border border-sky-200 transition">
+          🔄 Sync BE
+        </button>
+        <button onclick="openManageModal()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+          ⚙️ Quản lý món (<span id="totalCountBadge">0</span>)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wizard -->
+  <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full">
+
+    <!-- Stepper Navigation Header -->
+    <div class="grid grid-cols-3 gap-2 mb-6">
+      <div id="stepHeader1" class="p-3 rounded-xl border text-center transition-all bg-sky-600 text-white border-sky-600 shadow-sm">
+        <div class="text-xs font-bold uppercase tracking-wider">Bước 1</div>
+        <div class="text-sm font-semibold">Chọn bữa ăn</div>
+      </div>
+      <div id="stepHeader2" class="p-3 rounded-xl border text-center transition-all bg-white text-slate-400 border-slate-200">
+        <div class="text-xs font-bold uppercase tracking-wider">Bước 2</div>
+        <div class="text-sm font-semibold">Lọc thực đơn</div>
+      </div>
+      <div id="stepHeader3" class="p-3 rounded-xl border text-center transition-all bg-white text-slate-400 border-slate-200">
+        <div class="text-xs font-bold uppercase tracking-wider">Bước 3</div>
+        <div class="text-sm font-semibold">Random ngẫu nhiên</div>
+      </div>
+    </div>
+
+    <!-- BƯỚC 1: CHỌN BỮA ĂN -->
+    <section id="step1" class="glass-card rounded-2xl p-6 shadow-sm">
+      <h2 class="text-xl font-bold text-slate-800 mb-1">Bạn muốn ăn vào lúc nào?</h2>
+      <p class="text-slate-500 text-sm mb-6">Hệ thống sẽ lọc bớt các món không phù hợp thời gian.</p>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <button onclick="selectMeal('Sáng')" class="meal-btn p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50/50 transition text-center group">
+          <div class="text-4xl mb-2 group-hover:scale-110 transition">🌅</div>
+          <div class="font-bold text-slate-800">Bữa Sáng</div>
+          <div class="text-xs text-slate-500 mt-1">Nhanh & Năng lượng</div>
+        </button>
+        <button onclick="selectMeal('Trưa')" class="meal-btn p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50/50 transition text-center group">
+          <div class="text-4xl mb-2 group-hover:scale-110 transition">☀️</div>
+          <div class="font-bold text-slate-800">Bữa Trưa</div>
+          <div class="text-xs text-slate-500 mt-1">No bụng & Đủ chất</div>
+        </button>
+        <button onclick="selectMeal('Tối')" class="meal-btn p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50/50 transition text-center group">
+          <div class="text-4xl mb-2 group-hover:scale-110 transition">🌙</div>
+          <div class="font-bold text-slate-800">Bữa Tối</div>
+          <div class="text-xs text-slate-500 mt-1">Thư giãn & Đậm đà</div>
+        </button>
+        <button onclick="selectMeal('Tất cả')" class="meal-btn p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50/50 transition text-center group">
+          <div class="text-4xl mb-2 group-hover:scale-110 transition">🍱</div>
+          <div class="font-bold text-slate-800">Tất Cả Buổi</div>
+          <div class="text-xs text-slate-500 mt-1">Mọi lúc mọi nơi</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- BƯỚC 2: LỌC LOẠI MÓN -->
+    <section id="step2" class="glass-card rounded-2xl p-6 shadow-sm hidden">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">Lọc theo sở thích</h2>
+          <p class="text-slate-500 text-sm">Đang chọn cho: <span id="selectedMealBadge" class="font-bold text-sky-600">Bữa Trưa</span></p>
+        </div>
+        <button onclick="goToStep(1)" class="text-xs font-semibold text-sky-600 hover:underline">← Đổi bữa ăn</button>
+      </div>
+
+      <div class="space-y-5">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">1. Xuất xứ / Quốc gia</label>
+          <div id="originFilters" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">2. Phong cách chế biến</label>
+          <div id="categoryFilters" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between">
+        <div class="text-sm font-medium text-slate-600">
+          Tìm thấy <span id="filteredCount" class="font-extrabold text-sky-600 text-lg">0</span> món phù hợp
+        </div>
+        <button onclick="goToStep(3)" class="px-6 py-3 rounded-xl bg-gradient-ocean text-white font-bold shadow-lg shadow-sky-500/20 hover:opacity-95 transition">
+          Tiếp tục quay số 🎲
+        </button>
+      </div>
+    </section>
+
+    <!-- BƯỚC 3: RANDOM SLOT MACHINE -->
+    <section id="step3" class="glass-card rounded-2xl p-6 shadow-sm text-center hidden">
+      <div class="flex items-center justify-between mb-2">
+        <button onclick="goToStep(2)" class="text-xs font-semibold text-sky-600 hover:underline">← Chọn lại bộ lọc</button>
+        <span class="text-xs bg-sky-100 text-sky-700 px-2.5 py-1 rounded-full font-semibold" id="slotFilterInfo">Tất cả món</span>
+      </div>
+
+      <div class="py-8">
+        <div class="max-w-md mx-auto bg-gradient-to-br from-sky-500 to-blue-600 rounded-3xl p-8 text-white shadow-xl shadow-sky-500/30 relative overflow-hidden">
+          <div class="text-xs font-bold uppercase tracking-widest text-sky-100 mb-2">Hôm nay bạn nên ăn</div>
+          <div id="slotMachine" class="text-3xl md:text-4xl font-extrabold my-6 min-h-[3.5rem] flex items-center justify-center tracking-tight">
+            ❓ Bấm nút để quay!
+          </div>
+          <div id="dishMeta" class="text-xs text-sky-100 bg-white/20 py-1.5 px-4 rounded-full inline-block backdrop-blur-sm hidden">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <button id="randomBtn" onclick="spinSlot()" class="w-full max-w-md py-4 rounded-2xl bg-gradient-ocean text-white font-black text-lg shadow-xl shadow-sky-500/30 hover:scale-[1.02] active:scale-[0.98] transition">
+          BẮT ĐẦU RANDOM MÓN 🎰
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Quản Lý Món & Nhập Hàng Loạt -->
+  <div id="manageModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="font-bold text-lg text-slate-800">Quản lý & Thêm món ăn</h3>
+        <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <label class="block text-xs font-bold uppercase text-slate-500">Thêm nhiều món (cách nhau bởi dấu phẩy hoặc xuống dòng)</label>
+        <textarea id="batchInput" rows="3" class="w-full p-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 outline-none" placeholder="Ví dụ: Bún riêu cua, Cơm chiên hải sản, Bánh xèo..."></textarea>
+        <button onclick="addBatchDishes()" class="w-full py-2.5 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-700 transition">
+          + Thêm vào danh sách
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto border-t pt-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-400 uppercase">Danh sách hiện tại</span>
+          <button onclick="resetDefaultDishes()" class="text-xs text-red-500 hover:underline">Khôi phục mặc định</button>
+        </div>
+        <div id="dishListContainer" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="py-4 text-center text-xs font-semibold text-slate-400 border-t border-slate-200/60 bg-white">
+    Bản quyền thuộc về Kim Yến
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'yien_food_app_dishes_v5';
+    let allDishes = [];
+    let currentMeal = 'Trưa';
+    let selectedOrigins = ['Tất cả'];
+    let selectedCategories = ['Tất cả'];
+    let filteredDishes = [];
+
+    async function initApp() {
+      const cached = localStorage.getItem(STORAGE_KEY);
+      if (cached) {
+        try {
+          allDishes = JSON.parse(cached);
+          updateUI();
+          return;
+        } catch(e) {}
+      }
+
+      try {
+        const res = await fetch('/api/dishes');
+        const json = await res.json();
+        if (json.data && json.data.length > 0) {
+          allDishes = json.data;
+          saveLocal();
+        }
+      } catch (err) {
+        console.log('BE offline, using default local data');
+      }
+
+      updateUI();
+    }
+
+    function saveLocal() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(allDishes));
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById('totalCountBadge').innerText = allDishes.length;
+      filterDishes();
+    }
+
+    function selectMeal(meal) {
+      currentMeal = meal;
+      document.getElementById('selectedMealBadge').innerText = meal;
+      goToStep(2);
+    }
+
+    function goToStep(stepNum) {
+      [1, 2, 3].forEach(num => {
+        document.getElementById(`step${num}`).classList.add('hidden');
+        const hdr = document.getElementById(`stepHeader${num}`);
+        hdr.className = 'p-3 rounded-xl border text-center transition-all bg-white text-slate-400 border-slate-200';
+      });
+
+      document.getElementById(`step${stepNum}`).classList.remove('hidden');
+      const activeHdr = document.getElementById(`stepHeader${stepNum}`);
+      activeHdr.className = 'p-3 rounded-xl border text-center transition-all bg-sky-600 text-white border-sky-600 shadow-sm';
+
+      if (stepNum === 2) renderFilters();
+      if (stepNum === 3) prepareSlotScreen();
+    }
+
+    function renderFilters() {
+      const origins = ['Tất cả', ...new Set(allDishes.map(d => d.origin).filter(Boolean))];
+      const categories = ['Tất cả', ...new Set(allDishes.map(d => d.category).filter(Boolean))];
+
+      const originContainer = document.getElementById('originFilters');
+      originContainer.innerHTML = origins.map(o => `
+        <button onclick="toggleFilter('origin', '${o}')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition ${selectedOrigins.includes(o) ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+          ${o}
+        </button>
+      `).join('');
+
+      const categoryContainer = document.getElementById('categoryFilters');
+      categoryContainer.innerHTML = categories.map(c => `
+        <button onclick="toggleFilter('category', '${c}')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition ${selectedCategories.includes(c) ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+          ${c}
+        </button>
+      `).join('');
+
+      filterDishes();
+    }
+
+    function toggleFilter(type, value) {
+      if (type === 'origin') {
+        if (value === 'Tất cả') selectedOrigins = ['Tất cả'];
+        else {
+          selectedOrigins = selectedOrigins.filter(x => x !== 'Tất cả');
+          if (selectedOrigins.includes(value)) selectedOrigins = selectedOrigins.filter(x => x !== value);
+          else selectedOrigins.push(value);
+          if (selectedOrigins.length === 0) selectedOrigins = ['Tất cả'];
+        }
+      } else {
+        if (value === 'Tất cả') selectedCategories = ['Tất cả'];
+        else {
+          selectedCategories = selectedCategories.filter(x => x !== 'Tất cả');
+          if (selectedCategories.includes(value)) selectedCategories = selectedCategories.filter(x => x !== value);
+          else selectedCategories.push(value);
+          if (selectedCategories.length === 0) selectedCategories = ['Tất cả'];
+        }
+      }
+      renderFilters();
+    }
+
+    function filterDishes() {
+      filteredDishes = allDishes.filter(dish => {
+        const matchMeal = currentMeal === 'Tất cả' || (dish.meal && dish.meal.includes(currentMeal));
+        const matchOrigin = selectedOrigins.includes('Tất cả') || selectedOrigins.includes(dish.origin);
+        const matchCategory = selectedCategories.includes('Tất cả') || selectedCategories.includes(dish.category);
+        return matchMeal && matchOrigin && matchCategory;
+      });
+
+      const countEl = document.getElementById('filteredCount');
+      if (countEl) countEl.innerText = filteredDishes.length;
+    }
+
+    function prepareSlotScreen() {
+      filterDishes();
+      document.getElementById('slotFilterInfo').innerText = `${currentMeal} (${filteredDishes.length} món)`;
+      document.getElementById('randomBtn').innerText = 'BẮT ĐẦU RANDOM MÓN 🎰';
+    }
+
+    let isSpinning = false;
+    function spinSlot() {
+      if (isSpinning) return;
+      if (filteredDishes.length === 0) {
+        alert('Không tìm thấy món phù hợp với bộ lọc!');
+        return;
+      }
+
+      isSpinning = true;
+      const slot = document.getElementById('slotMachine');
+      const meta = document.getElementById('dishMeta');
+      const btn = document.getElementById('randomBtn');
+
+      let counter = 0;
+      const speed = 60;
+      const totalSpins = 25;
+
+      const timer = setInterval(() => {
+        const randomItem = filteredDishes[Math.floor(Math.random() * filteredDishes.length)];
+        slot.innerText = randomItem.name;
+        counter++;
+
+        if (counter >= totalSpins) {
+          clearInterval(timer);
+          isSpinning = false;
+          const finalItem = filteredDishes[Math.floor(Math.random() * filteredDishes.length)];
+          slot.innerText = finalItem.name;
+
+          meta.innerText = `${finalItem.origin || 'Việt Nam'} • ${finalItem.category || 'Món ngon'}`;
+          meta.classList.remove('hidden');
+
+          btn.innerText = 'TÌM MÓN MỚI 🎰';
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+        }
+      }, speed);
+    }
+
+    function addBatchDishes() {
+      const text = document.getElementById('batchInput').value.trim();
+      if (!text) return;
+
+      const items = text.split(/[,\n]+/).map(x => x.trim()).filter(x => x.length > 0);
+      items.forEach(name => {
+        allDishes.unshift({
+          id: Date.now() + Math.random(),
+          name: name,
+          category: 'Tự thêm',
+          origin: 'Việt Nam',
+          meal: ['Sáng', 'Trưa', 'Tối']
+        });
+      });
+
+      document.getElementById('batchInput').value = '';
+      saveLocal();
+      renderDishList();
+      alert(`Đã thêm ${items.length} món mới vào danh sách!`);
+    }
+
+    function removeDish(id) {
+      allDishes = allDishes.filter(d => d.id !== id);
+      saveLocal();
+      renderDishList();
+    }
+
+    function renderDishList() {
+      const container = document.getElementById('dishListContainer');
+      container.innerHTML = allDishes.map(d => `
+        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
+          <span class="font-semibold text-slate-700">${d.name}</span>
+          <button onclick="removeDish(${d.id})" class="text-red-400 hover:text-red-600 font-bold">Xóa</button>
+        </div>
+      `).join('');
+    }
+
+    async function syncWithBackend() {
+      try {
+        const res = await fetch('/api/dishes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dishes: allDishes })
+        });
+        const data = await res.json();
+        alert(data.message || 'Đã đồng bộ dữ liệu!');
+      } catch (err) {
+        alert('Đã gửi yêu cầu sync tới BE!');
+      }
+    }
+
+    function openManageModal() {
+      renderDishList();
+      document.getElementById('manageModal').classList.remove('hidden');
+    }
+
+    function closeManageModal() {
+      document.getElementById('manageModal').classList.add('hidden');
+    }
+
+    function resetDefaultDishes() {
+      if (confirm('Khôi phục danh sách mặc định?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        initApp();
+        closeManageModal();
+      }
+    }
+
+    window.onload = initApp;
+  </script>
+</body>
+</html>

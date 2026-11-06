@@ -1,0 +1,12 @@
+{
+  "name": "hom-nay-an-gi-fullstack",
+  "version": "1.0.0",
+  "description": "Ung dung Hom nay an gi? - Fullstack FE + BE Vercel Ready",
+  "main": "api/dishes.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "keywords": ["vercel", "fullstack", "food-randomizer"],
+  "author": "Kim Yến",
+  "license": "MIT"
+}
